@@ -91,8 +91,10 @@ void handleMessage(WebsocketsMessage message) {
   String data = message.data();
   Serial.println(String(data));
 
-if (data == "esp1/stop") {
+  if (data == "esp1/stop") {
     countdownTime = 0;
+  } else if (data == "esp1/temp") {
+    socket.send("esp1/" + String(int(countdownTime / 60)));
   } else {
     int splitIndex = data.indexOf('/');
 
