@@ -104,11 +104,13 @@ if (data == "esp1/stop") {
 
       if (espName == "esp1" && newCountdownTime > 0) {
         digitalWrite(ledPin, HIGH);
+        socket.send("esp1/ok");
 
         // Initialiser les variables de compte à rebours
         countdownTime = newCountdownTime;
         currentState = COUNTDOWN;
         previousMillis = millis();
+
 
       } else {
         Serial.println("Unexpected message: " + data);
