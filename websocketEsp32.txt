@@ -1,0 +1,176 @@
+#include <WiFi.h>
+#include <ArduinoWebsockets.h>
+using namespace websockets;
+
+WebsocketsClient socket;
+const char* websocketServer = "ws://192.168.0.105:8096/";
+boolean connected = false;
+
+const char* ssid = "...";
+const char* password = "esptotal24";
+
+const int ledPin = 14;
+
+unsigned long previousMillis = 0;
+const long interval = 1000;
+
+int countdownTime = 0;
+
+enum State {
+  IDLE,
+  COUNTDOWN,
+};
+
+State currentState = IDLE;
+
+void setup() {
+  Serial.begin(115200);
+  connectWiFi();
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+
+  connectToWebSocket();
+
+  socket.onMessage(handleMessage);
+  socket.onEvent(handleEvent);
+}
+
+void loop() {
+  try {
+    socket.poll();
+
+    unsigned long currentMillis = millis();
+
+    if (!connected) {
+      Serial.println("Connecting to WebSocket server");
+      connectToWebSocket();
+    }
+
+    switch (currentState) {
+      case IDLE:
+        // Attendre un nouveau message
+        break;
+
+      case COUNTDOWN:
+        if (currentMillis - previousMillis >= interval) {
+          previousMillis = currentMillis;
+          // Mettre à jour le compte à rebours ou effectuer d'autres actions périodiques
+
+          updateCountdown();
+        }
+        break;
+    }
+  } catch (...) {
+    Serial.println("Exception caught. Rebooting...");
+    ESP.restart();  // Redémarrer l'appareil en cas d'exception
+  }
+}
+
+void updateCountdown() {
+  countdownTime--;
+  if (countdownTime >= 0) {
+    if (countdownTime % 60 == 0) {
+      socket.send("esp1/" + String(countdownTime / 60));
+    }
+  } else {
+    // Fin du compte à rebours
+    digitalWrite(ledPin, LOW);
+    socket.send("LED turned off");
+    currentState = IDLE;  // Revenir à l'état IDLE
+  }
+}
+
+void handleMessage(WebsocketsMessage message) {
+  String data = message.data();
+  Serial.println(String(data));
+
+  int splitIndex = data.indexOf('/');
+
+  if (splitIndex != -1) {
+    String espName = data.substring(0, splitIndex);
+    String time = data.substring(splitIndex + 1);
+
+    int newCountdownTime = 60 * (time.toInt());
+
+    if (espName == "esp1" && newCountdownTime > 0) {
+      digitalWrite(ledPin, HIGH);
+
+      // Initialiser les variables de compte à rebours
+      countdownTime = newCountdownTime;
+      currentState = COUNTDOWN;
+      previousMillis = millis();
+
+    } else if (data == "esp1/stop") {
+      countdownTime = 0;
+    } else {
+      Serial.println("Unexpected message: " + data);
+    }
+  }
+}
+
+void handleEvent(WebsocketsEvent event, WSInterfaceString data) {
+  switch (event) {
+    case WebsocketsEvent::ConnectionOpened:
+      Serial.println("WebSocket connection established");
+      connected = true;
+      break;
+    case WebsocketsEvent::ConnectionClosed:
+      Serial.println("WebSocket connection closed");
+      connected = false;
+      // Réessayer la connexion en cas de fermeture inattendue
+      connectToWebSocket();
+      break;
+    case WebsocketsEvent::GotPing:
+      Serial.println("Received ping");
+      break;
+    case WebsocketsEvent::GotPong:
+      Serial.println("Received pong");
+      break;
+    default:
+      break;
+  }
+}
+
+void connectToWebSocket() {
+  connected = socket.connect(websocketServer);
+  if (connected) {
+    Serial.println("Connected");
+  } else {
+    Serial.println("Connection failed.");
+    // Gérer l'échec de connexion de manière appropriée
+    handleConnectionFailure();
+  }
+}
+
+void connectWiFi() {
+  WiFi.mode(WIFI_OFF);
+  delay(1000);
+  WiFi.mode(WIFI_STA);
+
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to WiFi");
+
+  unsigned long startAttemptTime = millis();
+
+  while (WiFi.status() != WL_CONNECTED) {
+    if (millis() - startAttemptTime > 10000) {
+      // Gérer l'échec de connexion WiFi après un certain temps
+      handleWiFiConnectionFailure();
+    }
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.print("connected to : ");
+  Serial.println(ssid);
+}
+
+void handleConnectionFailure() {
+  Serial.println("WebSocket connection failed. Reconnecting...");
+  connectToWebSocket();  // Réessayer la connexion WebSocket
+}
+
+void handleWiFiConnectionFailure() {
+  Serial.println("WiFi connection failed. Reconnecting...");
+  connectWiFi();  // Réessayer la connexion WiFi
+}
