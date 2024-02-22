@@ -3,12 +3,12 @@
 using namespace websockets;
 
 WebsocketsClient socket;
-const char* websocketServer = "ws://192.168.0.105:8096/";
+const char* websocketServer = "ws://192.168.88.18:8087/";
 boolean connected = false;
 boolean powerState = true;  // État de l'alimentation, true pour activé
 
-const char* ssid = "...";
-const char* password = "esptotal24";
+const char* ssid = ".";
+const char* password = "shopambalavola301";
 
 const int ledPin = 14;
 

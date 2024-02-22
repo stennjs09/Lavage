@@ -8,36 +8,47 @@ use Ratchet\Http\HttpServer;
 use Ratchet\WebSocket\WsServer;
 
 class WebSocketApplication implements MessageComponentInterface {
-   public function onOpen(ConnectionInterface $conn) {
-       echo "Nouvelle connexion établie : {$conn->resourceId}\n";
+    protected $clients;
 
-       // Envoyer un message de bienvenue à l'utilisateur
-       $conn->send("Bienvenue ! Vous êtes connecté.");
-   }
+    public function __construct() {
+        $this->clients = new \SplObjectStorage;
+    }
 
-   public function onMessage(ConnectionInterface $from, $msg) {
-       // Logique pour gérer les messages reçus
-   }
+    public function onOpen(ConnectionInterface $conn) {
+        $this->clients->attach($conn);
+        echo "Nouvelle connexion établie : {$conn->resourceId}\n";
+        $conn->send("Bienvenue ! Vous êtes connecté.");
+    }
 
-   public function onClose(ConnectionInterface $conn) {
-       echo "La connexion {$conn->resourceId} est déconnectée\n";
-   }
+    public function onMessage(ConnectionInterface $from, $msg) {
+        foreach ($this->clients as $client) {
+            // Envoyer le message à tous les clients, sauf à l'émetteur
+            if ($from !== $client) {
+                $client->send($msg);
+            }
+        }
+    }
 
-   public function onError(ConnectionInterface $conn, \Exception $e) {
-       echo "Une erreur est survenue : {$e->getMessage()}\n";
-       $conn->close();
-   }
+    public function onClose(ConnectionInterface $conn) {
+        $this->clients->detach($conn);
+        echo "La connexion {$conn->resourceId} est déconnectée\n";
+    }
+
+    public function onError(ConnectionInterface $conn, \Exception $e) {
+        echo "Une erreur est survenue : {$e->getMessage()}\n";
+        $conn->close();
+    }
 }
 
 $server = IoServer::factory(
-   new HttpServer(
-       new WsServer(
-           new WebSocketApplication()
-       )
-   ),
-   8096 // Vous pouvez choisir le port ici
+    new HttpServer(
+        new WsServer(
+            new WebSocketApplication()
+        )
+    ),
+    8096
 );
 
-echo "Serveur WebSocket démarré sur le port 8080...\n";
+echo "Serveur WebSocket démarré sur le port 8096...\n";
 
 $server->run();
