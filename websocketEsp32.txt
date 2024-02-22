@@ -5,6 +5,7 @@ using namespace websockets;
 WebsocketsClient socket;
 const char* websocketServer = "ws://192.168.0.105:8096/";
 boolean connected = false;
+boolean powerState = true;  // État de l'alimentation, true pour activé
 
 const char* ssid = "...";
 const char* password = "esptotal24";
@@ -64,6 +65,12 @@ void loop() {
     Serial.println("Exception caught. Rebooting...");
     ESP.restart();  // Redémarrer l'appareil en cas d'exception
   }
+
+  // Vérifier et agir en conséquence sur l'alimentation
+  if (!powerState) {
+    // Si l'alimentation est coupée, ne rien faire
+    return;
+  }
 }
 
 void updateCountdown() {
@@ -84,26 +91,28 @@ void handleMessage(WebsocketsMessage message) {
   String data = message.data();
   Serial.println(String(data));
 
-  int splitIndex = data.indexOf('/');
+if (data == "esp1/stop") {
+    countdownTime = 0;
+  } else {
+    int splitIndex = data.indexOf('/');
 
-  if (splitIndex != -1) {
-    String espName = data.substring(0, splitIndex);
-    String time = data.substring(splitIndex + 1);
+    if (splitIndex != -1) {
+      String espName = data.substring(0, splitIndex);
+      String time = data.substring(splitIndex + 1);
 
-    int newCountdownTime = 60 * (time.toInt());
+      int newCountdownTime = 60 * (time.toInt());
 
-    if (espName == "esp1" && newCountdownTime > 0) {
-      digitalWrite(ledPin, HIGH);
+      if (espName == "esp1" && newCountdownTime > 0) {
+        digitalWrite(ledPin, HIGH);
 
-      // Initialiser les variables de compte à rebours
-      countdownTime = newCountdownTime;
-      currentState = COUNTDOWN;
-      previousMillis = millis();
+        // Initialiser les variables de compte à rebours
+        countdownTime = newCountdownTime;
+        currentState = COUNTDOWN;
+        previousMillis = millis();
 
-    } else if (data == "esp1/stop") {
-      countdownTime = 0;
-    } else {
-      Serial.println("Unexpected message: " + data);
+      } else {
+        Serial.println("Unexpected message: " + data);
+      }
     }
   }
 }
