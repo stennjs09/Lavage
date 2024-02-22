@@ -1,0 +1,17 @@
+{
+    "name": "stenn/project1",
+    "autoload": {
+        "psr-4": {
+            "Stenn\\Project1\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Stenn",
+            "email": "stennjs09@gmail.com"
+        }
+    ],
+    "require": {
+        "cboden/ratchet": "^0.4.4"
+    }
+}

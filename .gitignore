@@ -1,0 +1,8 @@
+# Dossiers à ignorer
+/projet1/vendor/              # Ignorer le dossier des dépendances Composer
+/projet1//node_modules/        # Ignorer le dossier des dépendances Node.js
+/projet1//public/uploads/      # Ignorer les fichiers téléchargés ou téléversés
+
+# Fichiers à ignorer
+.env                  # Ignorer les fichiers de configuration environnementale
+*.log                 # Ignorer les fichiers journaux
