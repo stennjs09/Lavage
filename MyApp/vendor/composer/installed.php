@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
-        'name' => 'stenn/project1',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => 'c02d4d67f2c6c8ca58104f10f2815ebb853a025a',
+        'name' => 'stenn/webs',
+        'pretty_version' => '1.0.0+no-version-set',
+        'version' => '1.0.0.0',
+        'reference' => null,
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -139,10 +139,10 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
-        'stenn/project1' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => 'c02d4d67f2c6c8ca58104f10f2815ebb853a025a',
+        'stenn/webs' => array(
+            'pretty_version' => '1.0.0+no-version-set',
+            'version' => '1.0.0.0',
+            'reference' => null,
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

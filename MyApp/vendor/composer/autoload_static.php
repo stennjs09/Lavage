@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit9eca94b7a07eb7617b7d679933b27c17
+class ComposerStaticInit9417bc20d61848e2c5b9fba8e5883fc5
 {
     public static $files = array (
         'ad155f8f1cf0d418fe49e248db8c661b' => __DIR__ . '/..' . '/react/promise/src/functions_include.php',
@@ -23,7 +23,7 @@ class ComposerStaticInit9eca94b7a07eb7617b7d679933b27c17
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Component\\Routing\\' => 26,
             'Symfony\\Component\\HttpFoundation\\' => 33,
-            'Stenn\\Project1\\' => 15,
+            'Stenn\\Webs\\' => 11,
         ),
         'R' => 
         array (
@@ -71,7 +71,7 @@ class ComposerStaticInit9eca94b7a07eb7617b7d679933b27c17
         array (
             0 => __DIR__ . '/..' . '/symfony/http-foundation',
         ),
-        'Stenn\\Project1\\' => 
+        'Stenn\\Webs\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
@@ -145,9 +145,9 @@ class ComposerStaticInit9eca94b7a07eb7617b7d679933b27c17
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit9eca94b7a07eb7617b7d679933b27c17::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit9eca94b7a07eb7617b7d679933b27c17::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit9eca94b7a07eb7617b7d679933b27c17::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit9417bc20d61848e2c5b9fba8e5883fc5::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit9417bc20d61848e2c5b9fba8e5883fc5::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit9417bc20d61848e2c5b9fba8e5883fc5::$classMap;
 
         }, null, ClassLoader::class);
     }

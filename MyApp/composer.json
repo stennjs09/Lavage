@@ -1,8 +1,8 @@
 {
-    "name": "stenn/project1",
+    "name": "stenn/webs",
     "autoload": {
         "psr-4": {
-            "Stenn\\Project1\\": "src/"
+            "Stenn\\Webs\\": "src/"
         }
     },
     "authors": [
