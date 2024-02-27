@@ -17,7 +17,7 @@ class WebSocketApplication implements MessageComponentInterface {
     public function onOpen(ConnectionInterface $conn) {
         $this->clients->attach($conn);
         echo "Nouvelle connexion établie : {$conn->resourceId}\n";
-        $conn->send("Bienvenue ! Vous êtes connecté.");
+        $conn->send("esp1/Bienvenue");
     }
 
     public function onMessage(ConnectionInterface $from, $msg) {
