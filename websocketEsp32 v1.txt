@@ -3,17 +3,17 @@
 using namespace websockets;
 
 WebsocketsClient socket;
-const char* websocketServer = "ws://192.168.88.18:8096";
+const char* websocketServer = "ws://192.168.88.18:8087";
 boolean connected = false;
 
-const char* ssid = "...";
-const char* password = "esptotal24";
+const char* ssid = ".";
+const char* password = "shopambalavola301";
 
 const int ledPin = 2;
 const int relayPin = 32;
 
 unsigned long previousMillisWiFi = 0;
-const long intervalWiFi = 600000;
+const long intervalWiFi = 500000;
 
 unsigned long previousMillis = 0;
 const long interval = 1000;
@@ -45,7 +45,7 @@ void loop() {
   unsigned long currentMillisWiFi = millis();
   if (currentMillisWiFi - previousMillisWiFi >= intervalWiFi) {
     previousMillisWiFi = currentMillisWiFi;
-    WiFi.mode(WIFI_OFF);
+    socket.close();
   }
 
   if (WiFi.status() != WL_CONNECTED) {
