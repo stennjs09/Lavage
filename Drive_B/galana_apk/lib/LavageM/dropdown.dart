@@ -1,119 +1,118 @@
 import 'package:flutter/material.dart';
-import 'package:galana_apk/Lavage/circle.dart';
+import 'package:galana_apk/LavageM/circle.dart';
 import 'package:galana_apk/Services/delayed_animation.dart';
-import 'package:galana_apk/main.dart';
 
-class MyListView extends StatefulWidget {
+class MyListViewLM extends StatefulWidget {
   @override
-  _MyListViewState createState() => _MyListViewState();
+  _MyListViewLMState createState() => _MyListViewLMState();
 }
 
-String selectedCategory = 'Scooter';
-String selectedType = 'Exterieur';
-int price = 4000;
-int temp = 20;
+String selectedCategoryLM = 'Scooter';
+String selectedTypeLM = 'Exterieur';
+int priceLM = 4000;
+int tempLavageM = 20;
 
 void sendDataToServer(selectedCategory, selectedType, price, temp ) async {
 
 }
 
-class _MyListViewState extends State<MyListView> {
+class _MyListViewLMState extends State<MyListViewLM> {
   void setPrice() {
-    if (selectedCategory == 'Scooter') {
+    if (selectedCategoryLM == 'Scooter') {
       setState(() {
-        price = 4000;
-        temp = 20;
+        priceLM = 4000;
+        tempLavageM = 20;
       });
-    } else if (selectedCategory == 'Cross') {
+    } else if (selectedCategoryLM == 'Cross') {
       setState(() {
-        price = 5000;
-        temp = 20;
+        priceLM = 5000;
+        tempLavageM = 20;
       });
     }
-    if (selectedCategory == 'Radiateur PM') {
+    if (selectedCategoryLM == 'Radiateur PM') {
       setState(() {
-        price = 5000;
-        temp = 15;
+        priceLM = 5000;
+        tempLavageM = 15;
       });
-    } else if (selectedCategory == 'Radiateur GM') {
+    } else if (selectedCategoryLM == 'Radiateur GM') {
       setState(() {
-        price = 10000;
-        temp = 15;
+        priceLM = 10000;
+        tempLavageM = 15;
       });
-    } else if (selectedCategory == 'Légère' && selectedType == 'Interieur') {
+    } else if (selectedCategoryLM == 'Légère' && selectedTypeLM == 'Interieur') {
       setState(() {
-        price = 5000;
-        temp = 1;
+        priceLM = 5000;
+        tempLavageM = 1;
       });
-    } else if (selectedCategory == 'Légère' && selectedType == 'Exterieur') {
+    } else if (selectedCategoryLM == 'Légère' && selectedTypeLM == 'Exterieur') {
       setState(() {
-        price = 8000;
-        temp = 30;
+        priceLM = 8000;
+        tempLavageM = 30;
       });
-    } else if (selectedCategory == 'Légère' &&
-        selectedType == 'Interieur et exterieur') {
+    } else if (selectedCategoryLM == 'Légère' &&
+        selectedTypeLM == 'Interieur et exterieur') {
       setState(() {
-        price = 13000;
-        temp = 30;
+        priceLM = 13000;
+        tempLavageM = 30;
       });
-    } else if (selectedCategory == '4x4' && selectedType == 'Interieur') {
+    } else if (selectedCategoryLM == '4x4' && selectedTypeLM == 'Interieur') {
       setState(() {
-        price = 6000;
-        temp = 1;
+        priceLM = 6000;
+        tempLavageM = 1;
       });
-    } else if (selectedCategory == '4x4' && selectedType == 'Exterieur') {
+    } else if (selectedCategoryLM == '4x4' && selectedTypeLM == 'Exterieur') {
       setState(() {
-        price = 10000;
-        temp = 60;
+        priceLM = 10000;
+        tempLavageM = 60;
       });
-    } else if (selectedCategory == '4x4' &&
-        selectedType == 'Interieur et exterieur') {
+    } else if (selectedCategoryLM == '4x4' &&
+        selectedTypeLM == 'Interieur et exterieur') {
       setState(() {
-        price = 16000;
-        temp = 60;
+        priceLM = 16000;
+        tempLavageM = 60;
       });
-    } else if (selectedCategory == 'Minibus et Sprinter' &&
-        selectedType == 'Interieur') {
+    } else if (selectedCategoryLM == 'Minibus et Sprinter' &&
+        selectedTypeLM == 'Interieur') {
       setState(() {
-        price = 7000;
-        temp = 1;
+        priceLM = 7000;
+        tempLavageM = 1;
       });
-    } else if (selectedCategory == 'Minibus et Sprinter' &&
-        selectedType == 'Exterieur') {
+    } else if (selectedCategoryLM == 'Minibus et Sprinter' &&
+        selectedTypeLM == 'Exterieur') {
       setState(() {
-        price = 13000;
-        temp = 90;
+        priceLM = 13000;
+        tempLavageM = 90;
       });
-    } else if (selectedCategory == 'Minibus et Sprinter' &&
-        selectedType == 'Interieur et exterieur') {
+    } else if (selectedCategoryLM == 'Minibus et Sprinter' &&
+        selectedTypeLM == 'Interieur et exterieur') {
       setState(() {
-        price = 20000;
-        temp = 90;
+        priceLM = 20000;
+        tempLavageM = 90;
       });
-    } else if (selectedCategory == 'Camionnette') {
+    } else if (selectedCategoryLM == 'Camionnette') {
       setState(() {
-        price = 40000;
-        temp = 120;
+        priceLM = 40000;
+        tempLavageM = 120;
       });
-    } else if (selectedCategory == 'Camion -5T') {
+    } else if (selectedCategoryLM == 'Camion -5T') {
       setState(() {
-        price = 45000;
-        temp = 150;
+        priceLM = 45000;
+        tempLavageM = 150;
       });
-    } else if (selectedCategory == 'Camion +5T') {
+    } else if (selectedCategoryLM == 'Camion +5T') {
       setState(() {
-        price = 85000;
-        temp = 150;
+        priceLM = 85000;
+        tempLavageM = 150;
       });
-    } else if (selectedCategory == 'Moteur 4C') {
+    } else if (selectedCategoryLM == 'Moteur 4C') {
       setState(() {
-        price = 10000;
-        temp = 20;
+        priceLM = 10000;
+        tempLavageM = 20;
       });
-    } else if (selectedCategory == 'Moteur 5C') {
+    } else if (selectedCategoryLM == 'Moteur 5C') {
       setState(() {
-        price = 15000;
-        temp = 20;
+        priceLM = 15000;
+        tempLavageM = 20;
       });
     }
   }
@@ -138,7 +137,7 @@ class _MyListViewState extends State<MyListView> {
                     SizedBox(width: 10),
                     Text('Catégorie: '),
                     Spacer(),
-                    Text(selectedCategory),
+                    Text(selectedCategoryLM),
                   ],
                 ),
                 trailing: Icon(Icons.chevron_right),
@@ -171,14 +170,14 @@ class _MyListViewState extends State<MyListView> {
                                   title: Text(
                                     category,
                                     style: TextStyle(
-                                      color: selectedCategory == category
+                                      color: selectedCategoryLM == category
                                           ? Colors.blue
                                           : Colors.black,
                                     ),
                                   ),
                                   onTap: () {
                                     setState(() {
-                                      selectedCategory = category;
+                                      selectedCategoryLM = category;
                                       setPrice(); // Appel de la fonction pour définir le prix
                                     });
                                     Navigator.of(context).pop();
@@ -192,9 +191,9 @@ class _MyListViewState extends State<MyListView> {
                   );
                 },
               ),
-              if (selectedCategory == 'Légère' ||
-                  selectedCategory == '4x4' ||
-                  selectedCategory == 'Minibus et Sprinter')
+              if (selectedCategoryLM == 'Légère' ||
+                  selectedCategoryLM == '4x4' ||
+                  selectedCategoryLM == 'Minibus et Sprinter')
                 ListTile(
                   title: Row(
                     children: [
@@ -202,7 +201,7 @@ class _MyListViewState extends State<MyListView> {
                       SizedBox(width: 10),
                       Text('Type'),
                       Spacer(),
-                      Text(selectedType),
+                      Text(selectedTypeLM),
                     ],
                   ),
                   trailing: Icon(Icons.chevron_right),
@@ -226,14 +225,14 @@ class _MyListViewState extends State<MyListView> {
                                     title: Text(
                                       type,
                                       style: TextStyle(
-                                        color: selectedType == type
+                                        color: selectedTypeLM == type
                                             ? Colors.blue
                                             : Colors.black,
                                       ),
                                     ),
                                     onTap: () {
                                       setState(() {
-                                        selectedType = type;
+                                        selectedTypeLM = type;
                                         setPrice(); // Appel de la fonction pour définir le prix
                                       });
                                       Navigator.of(context).pop();
@@ -252,7 +251,7 @@ class _MyListViewState extends State<MyListView> {
           Center(
             child: DelayedAnimation(
               delay: 5000,
-              child: BlinkingCircle(),
+              child: BlinkingCircleLM(),
             ),
           ),
         ],
@@ -277,7 +276,7 @@ class _MyListViewState extends State<MyListView> {
                       color: Colors.black54),
                   children: <TextSpan>[
                     TextSpan(
-                      text: '$temp min',
+                      text: '$tempLavageM min',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -292,7 +291,7 @@ class _MyListViewState extends State<MyListView> {
                           color: Colors.black54),
                     ),
                     TextSpan(
-                      text: '$price AR',
+                      text: '$priceLM AR',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,

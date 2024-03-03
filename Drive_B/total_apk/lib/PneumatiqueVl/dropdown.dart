@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:galana_apk/PneumatiqueVl/circle.dart';
-import 'package:http/http.dart' as http;
-import 'package:galana_apk/Services/delayed_animation.dart';
-import 'package:galana_apk/main.dart';
+import 'package:total_apk/PneumatiqueVl/circle.dart';
+import 'package:total_apk/Services/delayed_animation.dart';
 
 class MyListViewVl extends StatefulWidget {
   @override
@@ -13,29 +11,9 @@ String selectedCategoryVl = 'Moto';
 String selectedTypeVl = 'Reparation';
 int priceVl = 2000;
 int tempVl = 15;
-bool isLoadingVl = false;
-bool isSuccessVl = false;
 
 void sendDataToServer(BuildContext context) async {
-  try {
-    isLoadingVl = true;
-    final url = Uri.parse(
-        '$urlServer/PNEUMATIQUE/GALANAvl/150.php?ApiKey=FGSFDG1312SFG32&selectedCategory=$selectedCategoryVl&selectedType=$selectedTypeVl&price=$priceVl&temp_pneumatiquevl=$tempVl');
 
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      isLoadingVl = false;
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Veuillez verifier la connexion au serveur!'),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 5),
-        ),
-      );
-    }
-  } catch (e) {}
 }
 
 class _MyListViewStateVl extends State<MyListViewVl> {
@@ -217,7 +195,7 @@ class _MyListViewStateVl extends State<MyListViewVl> {
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: Colors.green),
+                          color: Colors.red),
                     ),
                     TextSpan(text: ' , '),
                     TextSpan(
@@ -232,7 +210,7 @@ class _MyListViewStateVl extends State<MyListViewVl> {
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: Colors.green),
+                          color: Colors.red),
                     ),
                   ],
                 ),

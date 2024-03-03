@@ -3,8 +3,9 @@ import 'package:galana_apk/main.dart';
 import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:galana_apk/Services/delayed_animation.dart';
 import 'package:galana_apk/Lavage/dropdown.dart';
-// import 'package:galana_apk/PneumatiqueVl/dropdown.dart';
-// import 'package:galana_apk/PneumatiquePl/dropdown.dart';
+import 'package:galana_apk/LavageM/dropdown.dart';
+import 'package:galana_apk/PneumatiqueVl/dropdown.dart';
+import 'package:galana_apk/PneumatiquePl/dropdown.dart';
 
 
 class PersistentTabScreen extends StatelessWidget {
@@ -17,6 +18,7 @@ class PersistentTabScreen extends StatelessWidget {
         Screen1(),
         Screen2(),
         Screen3(),
+        Screen4(),
       ];
     }
 
@@ -26,6 +28,12 @@ class PersistentTabScreen extends StatelessWidget {
         PersistentBottomNavBarItem(
           icon: Icon(Icons.warehouse_sharp),
           title: "Lavage",
+          activeColorPrimary: Colors.green,
+          inactiveColorPrimary: Colors.grey,
+        ),
+        PersistentBottomNavBarItem(
+          icon: Icon(Icons.warehouse_outlined),
+          title: "Lavage Moteur",
           activeColorPrimary: Colors.green,
           inactiveColorPrimary: Colors.grey,
         ),
@@ -281,6 +289,41 @@ class Screen2 extends StatelessWidget {
           children: <Widget>[
             Logo(),
             DelayedAnimation(
+              delay: 1000,
+              child: Text(
+                '  LAVAGE MOTEUR',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        actions: <Widget>[
+          DelayedAnimation(
+              delay: 0,
+              child: dotsMenu()
+          ),
+        ],
+      ),
+      body: DelayedAnimation(
+        delay: 1000,
+        child: Container(
+          child: MyListViewLM(),
+        ),
+      ),
+    );
+  }
+}
+
+class Screen3 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          children: <Widget>[
+            Logo(),
+            DelayedAnimation(
               delay: 500,
               child: Text(
                 '  PNEUMATIQUE VL',
@@ -298,13 +341,13 @@ class Screen2 extends StatelessWidget {
         ],
       ),
       body: Center(
-        // child: MyListViewVl(),
+        child: MyListViewVl(),
       ),
     );
   }
 }
 
-class Screen3 extends StatelessWidget {
+class Screen4 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -330,7 +373,7 @@ class Screen3 extends StatelessWidget {
         ],
       ),
       body: Center(
-        // child: MyListViewPl(),
+        child: MyListViewPl(),
       ),
     );
   }

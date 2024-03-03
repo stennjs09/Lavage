@@ -1,56 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:galana_apk/PneumatiquePl/circle.dart';
-import 'package:http/http.dart' as http;
+import 'package:galana_apk/PneumatiqueVl/circle.dart';
 import 'package:galana_apk/Services/delayed_animation.dart';
-import 'package:galana_apk/main.dart';
 
-class MyListViewPl extends StatefulWidget {
+class MyListViewVl extends StatefulWidget {
   @override
-  _MyListViewStatePl createState() => _MyListViewStatePl();
+  _MyListViewStateVl createState() => _MyListViewStateVl();
 }
 
-String selectedCategoryPl = '315';
-String selectedTypePl = 'Reparation';
-int pricePl = 16000;
-int tempPl = 25;
-bool isLoadingPl = false;
-bool isSuccessPl = false;
+String selectedCategoryVl = 'Moto';
+String selectedTypeVl = 'Reparation';
+int priceVl = 2000;
+int tempVl = 15;
 
 void sendDataToServer(BuildContext context) async {
-  try {
-    isLoadingPl = true;
-    final url = Uri.parse(
-        '$urlServer/PNEUMATIQUE/GALANA/150.php?ApiKey=FGSFDG1312SFG32&selectedCategory=$selectedCategoryPl&selectedType=$selectedTypePl&price=$pricePl&temp_pneumatique=$tempPl');
 
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      isLoadingPl = false;
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Veuillez verifier la connexion au serveur!'),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 5),
-        ),
-      );
-    }
-  } catch (e) {}
 }
 
-class _MyListViewStatePl extends State<MyListViewPl> {
+class _MyListViewStateVl extends State<MyListViewVl> {
   void setPrice() {
-    if (selectedCategoryPl == '315') {
+    if (selectedCategoryVl == 'Moto') {
       setState(() {
-        selectedTypePl == 'Reparation' ? pricePl = 16000 : pricePl = 5000;
+        selectedTypeVl == 'Reparation' ? priceVl = 2000 : priceVl = 1000;
       });
-    } else if (selectedCategoryPl == '385') {
+    } else if (selectedCategoryVl == '13/14') {
       setState(() {
-        selectedTypePl == 'Reparation' ? pricePl = 20000 : pricePl = 5000;
+        selectedTypeVl == 'Reparation' ? priceVl = 3000 : priceVl = 1000;
+      });
+    } else if (selectedCategoryVl == '15/16') {
+      setState(() {
+        selectedTypeVl == 'Reparation' ? priceVl = 6000 : priceVl = 3000;
+      });
+    } else if (selectedCategoryVl == '17/18') {
+      setState(() {
+        selectedTypeVl == 'Reparation' ? priceVl = 8000 : priceVl = 4000;
+      });
+    } else if (selectedCategoryVl == '20') {
+      setState(() {
+        selectedTypeVl == 'Reparation' ? priceVl = 10000 : priceVl = 5000;
       });
     }
 
-    selectedTypePl == 'Reparation' ? tempPl = 25 : tempPl = 15;
+    selectedTypeVl == 'Reparation' ? tempVl = 15 : tempVl = 7;
   }
 
   @override
@@ -73,7 +63,7 @@ class _MyListViewStatePl extends State<MyListViewPl> {
                     SizedBox(width: 10),
                     Text('Catégorie: '),
                     Spacer(),
-                    Text(selectedCategoryPl),
+                    Text(selectedCategoryVl),
                   ],
                 ),
                 trailing: Icon(Icons.chevron_right),
@@ -84,26 +74,29 @@ class _MyListViewStatePl extends State<MyListViewPl> {
                       return AlertDialog(
                         title: Text('Catégories'),
                         content: Container(
-                          height: 110,
+                          height: 200,
                           width: double.maxFinite,
                           child: ListView(
                             children: [
                               for (var category in [
-                                '315',
-                                '385',
+                                'Moto',
+                                '13/14',
+                                '15/16',
+                                '17/18',
+                                '20',
                               ])
                                 ListTile(
                                   title: Text(
                                     category,
                                     style: TextStyle(
-                                      color: selectedCategoryPl == category
+                                      color: selectedCategoryVl == category
                                           ? Colors.blue
                                           : Colors.black,
                                     ),
                                   ),
                                   onTap: () {
                                     setState(() {
-                                      selectedCategoryPl = category;
+                                      selectedCategoryVl = category;
                                       setPrice(); // Appel de la fonction pour définir le prix
                                     });
                                     Navigator.of(context).pop();
@@ -124,7 +117,7 @@ class _MyListViewStatePl extends State<MyListViewPl> {
                     SizedBox(width: 10),
                     Text('Type'),
                     Spacer(),
-                    Text(selectedTypePl),
+                    Text(selectedTypeVl),
                   ],
                 ),
                 trailing: Icon(Icons.chevron_right),
@@ -147,14 +140,14 @@ class _MyListViewStatePl extends State<MyListViewPl> {
                                   title: Text(
                                     type,
                                     style: TextStyle(
-                                      color: selectedTypePl == type
+                                      color: selectedTypeVl == type
                                           ? Colors.blue
                                           : Colors.black,
                                     ),
                                   ),
                                   onTap: () {
                                     setState(() {
-                                      selectedTypePl = type;
+                                      selectedTypeVl = type;
                                       setPrice(); // Appel de la fonction pour définir le prix
                                     });
                                     Navigator.of(context).pop();
@@ -173,7 +166,7 @@ class _MyListViewStatePl extends State<MyListViewPl> {
           Center(
             child: DelayedAnimation(
               delay: 10,
-              child: BlinkingCirclePl(),
+              child: BlinkingCircleVl(),
             ),
           ),
         ],
@@ -198,11 +191,11 @@ class _MyListViewStatePl extends State<MyListViewPl> {
                       color: Colors.black54),
                   children: <TextSpan>[
                     TextSpan(
-                      text: '$tempPl min',
+                      text: '$tempVl min',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: Colors.green),
+                          color: Colors.blue),
                     ),
                     TextSpan(text: ' , '),
                     TextSpan(
@@ -213,11 +206,11 @@ class _MyListViewStatePl extends State<MyListViewPl> {
                           color: Colors.black54),
                     ),
                     TextSpan(
-                      text: '$pricePl AR',
+                      text: '$priceVl AR',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: Colors.green),
+                          color: Colors.blue),
                     ),
                   ],
                 ),

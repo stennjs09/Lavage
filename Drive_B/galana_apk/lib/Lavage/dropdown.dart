@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:total_apk/Lavage/circle.dart';
-import 'package:total_apk/Services/delayed_animation.dart';
-import 'package:total_apk/main.dart';
+import 'package:galana_apk/Lavage/circle.dart';
+import 'package:galana_apk/Services/delayed_animation.dart';
 
 class MyListView extends StatefulWidget {
   @override
@@ -12,60 +10,10 @@ class MyListView extends StatefulWidget {
 String selectedCategory = 'Scooter';
 String selectedType = 'Exterieur';
 int price = 4000;
-int temp = 20;
-bool isLoading = false;
-bool isSuccess = false;
+int tempLavage = 20;
 
-void sendDataToServer(BuildContext context) async {
-  if (selectedCategory == 'Scooter' ||
-      selectedCategory == 'Cross' ||
-      selectedCategory == 'Radiateur PM' ||
-      selectedCategory == 'Radiateur GM' ||
-      selectedCategory == 'Camionnette' ||
-      selectedCategory == 'Camion -5T' ||
-      selectedCategory == 'Camion +5T' ||
-      selectedCategory == 'Moteur 4C' ||
-      selectedCategory == 'Moteur 5C') {
-    selectedType = '';
-  }
-  if (selectedType == 'Interieur') {
+void sendDataToServer(selectedCategory, selectedType, price, temp ) async {
 
-    final url = Uri.parse(
-        '$urlServer/API1/150.php?ApiKey=FGSFDG1312SFG32&selectedCategory=$selectedCategory&selectedType=$selectedType&price=$price&temp_esp=0,ok');
-
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      isSuccess = true;
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Veuillez verifier la connexion au serveur!'),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 5),
-        ),
-      );
-
-    }
-
-  } else {
-    final url = Uri.parse(
-        '$urlServer/API1/150.php?ApiKey=FGSFDG1312SFG32&selectedCategory=$selectedCategory&selectedType=$selectedType&price=$price&temp_esp=$temp');
-
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      isLoading = true;
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Veuillez verifier la connexion au serveur!'),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 5),
-        ),
-      );
-    }
-  }
 }
 
 class _MyListViewState extends State<MyListView> {
@@ -73,98 +21,98 @@ class _MyListViewState extends State<MyListView> {
     if (selectedCategory == 'Scooter') {
       setState(() {
         price = 4000;
-        temp = 20;
+        tempLavage = 20;
       });
     } else if (selectedCategory == 'Cross') {
       setState(() {
         price = 5000;
-        temp = 20;
+        tempLavage = 20;
       });
     }
     if (selectedCategory == 'Radiateur PM') {
       setState(() {
         price = 5000;
-        temp = 15;
+        tempLavage = 15;
       });
     } else if (selectedCategory == 'Radiateur GM') {
       setState(() {
         price = 10000;
-        temp = 15;
+        tempLavage = 15;
       });
     } else if (selectedCategory == 'Légère' && selectedType == 'Interieur') {
       setState(() {
         price = 5000;
-        temp = 1;
+        tempLavage = 1;
       });
     } else if (selectedCategory == 'Légère' && selectedType == 'Exterieur') {
       setState(() {
         price = 8000;
-        temp = 30;
+        tempLavage = 30;
       });
     } else if (selectedCategory == 'Légère' &&
         selectedType == 'Interieur et exterieur') {
       setState(() {
         price = 13000;
-        temp = 30;
+        tempLavage = 30;
       });
     } else if (selectedCategory == '4x4' && selectedType == 'Interieur') {
       setState(() {
         price = 6000;
-        temp = 1;
+        tempLavage = 1;
       });
     } else if (selectedCategory == '4x4' && selectedType == 'Exterieur') {
       setState(() {
         price = 10000;
-        temp = 60;
+        tempLavage = 60;
       });
     } else if (selectedCategory == '4x4' &&
         selectedType == 'Interieur et exterieur') {
       setState(() {
         price = 16000;
-        temp = 60;
+        tempLavage = 60;
       });
     } else if (selectedCategory == 'Minibus et Sprinter' &&
         selectedType == 'Interieur') {
       setState(() {
         price = 7000;
-        temp = 1;
+        tempLavage = 1;
       });
     } else if (selectedCategory == 'Minibus et Sprinter' &&
         selectedType == 'Exterieur') {
       setState(() {
         price = 13000;
-        temp = 90;
+        tempLavage = 90;
       });
     } else if (selectedCategory == 'Minibus et Sprinter' &&
         selectedType == 'Interieur et exterieur') {
       setState(() {
         price = 20000;
-        temp = 90;
+        tempLavage = 90;
       });
     } else if (selectedCategory == 'Camionnette') {
       setState(() {
         price = 40000;
-        temp = 120;
+        tempLavage = 120;
       });
     } else if (selectedCategory == 'Camion -5T') {
       setState(() {
         price = 45000;
-        temp = 150;
+        tempLavage = 150;
       });
     } else if (selectedCategory == 'Camion +5T') {
       setState(() {
         price = 85000;
-        temp = 150;
+        tempLavage = 150;
       });
     } else if (selectedCategory == 'Moteur 4C') {
       setState(() {
         price = 10000;
-        temp = 20;
+        tempLavage = 20;
       });
     } else if (selectedCategory == 'Moteur 5C') {
       setState(() {
         price = 15000;
-        temp = 20;
+        tempLavage = 20;
       });
     }
   }
@@ -328,11 +276,11 @@ class _MyListViewState extends State<MyListView> {
                       color: Colors.black54),
                   children: <TextSpan>[
                     TextSpan(
-                      text: '$temp min',
+                      text: '$tempLavage min',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: Colors.red),
+                          color: Colors.green),
                     ),
                     TextSpan(text: ' , '),
                     TextSpan(
@@ -347,7 +295,7 @@ class _MyListViewState extends State<MyListView> {
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: Colors.red),
+                          color: Colors.green),
                     ),
                   ],
                 ),

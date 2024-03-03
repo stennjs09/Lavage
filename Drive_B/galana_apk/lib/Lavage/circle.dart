@@ -3,24 +3,35 @@ import 'dart:async';
 import 'package:galana_apk/Lavage/dropdown.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:galana_apk/main.dart';
+import 'package:web_socket_channel/io.dart';
 
 class BlinkingCircle extends StatefulWidget {
   @override
   _BlinkingCircleState createState() => _BlinkingCircleState();
 }
 
-bool lavageLibre = true;
-String lavageMessage = '';
-
 class _BlinkingCircleState extends State<BlinkingCircle>
     with SingleTickerProviderStateMixin {
+
+  bool lavageLibre = true;
+  String lavageMessage = 'Appareil HS';
   late AnimationController _controller;
   late Animation<double> _animation;
   Timer? _timer;
 
+
   @override
   void initState() {
     super.initState();
+
+    channel.sink.add("galana.lavage.temps");
+
+    channel = IOWebSocketChannel.connect(wsServer);
+    channel.stream.listen(
+          (message) {
+        CheckLavageMessage(message);
+      },
+    );
 
     _controller = AnimationController(
       vsync: this,
@@ -41,7 +52,7 @@ class _BlinkingCircleState extends State<BlinkingCircle>
       });
   }
 
-  Future<void> confirmSendData() async {
+  Future<void> confirmEspOn() async {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -58,7 +69,34 @@ class _BlinkingCircleState extends State<BlinkingCircle>
             TextButton(
               child: Text('OK'),
               onPressed: () {
-                _sendLavageMessage(temp);
+                _espOn(tempLavage);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> confirmEspOff() async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text('Arrêter l\'appareil maintenant ?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Annuler'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                _espOff();
                 Navigator.of(context).pop();
               },
             ),
@@ -119,26 +157,46 @@ class _BlinkingCircleState extends State<BlinkingCircle>
           Positioned(
             bottom: 20.0,
             right: 0,
+            child: GestureDetector(
+              onLongPress: () {
+                confirmEspOff();
+              },
               child: FloatingActionButton(
-                onPressed: () => confirmSendData(),
+                onPressed: () {
+                  confirmEspOn();
+                },
                 backgroundColor: Colors.white,
-                child: Icon(Icons.send, color: Colors.green),
+                child: Icon(Icons.send, color: lavageLibre ? Colors.green : Colors.red),
               ),
             ),
+          ),
+
       ],
     );
   }
-}
-void CheckLavageMessage(message){
-  List<String> messSplit = message.split("/");
-  String p1 = messSplit[0];
-  String p2 = messSplit[1];
-  if(p1 == 'esp1'){
-    p2 == '0' ? lavageMessage = 'Lavage libre' : lavageMessage = p2+' min';
-  }else{
 
+
+  void CheckLavageMessage(message){
+    List<String> messSplit = message.split("/");
+
+    if (messSplit[0] == 'galana' && messSplit[1] == 'lavage' && messSplit[2] == '0') {
+      setState(() {
+        lavageMessage = 'LG libre';
+      });
+      _controller.stop();
+      lavageLibre = true;
+    }else if(messSplit[0]=='galana' && messSplit[1] =='lavage' && messSplit[2] != '0'){
+      setState(() {
+        lavageMessage = messSplit[2] + ' min';
+      });
+      _controller.forward();
+      lavageLibre = false;
+    }
   }
-}
-void _sendLavageMessage(info) {
-    channel.sink.add("esp1/"+info.toString());
+  void _espOn(time) {
+    channel.sink.add("galana/lavage/"+time.toString());
+  }
+  void _espOff() {
+    channel.sink.add("galana.lavage.off");
+  }
 }

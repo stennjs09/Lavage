@@ -1,28 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:connectivity/connectivity.dart';
 import 'dart:async';
-import 'package:galana_apk/PneumatiquePl/dropdown.dart';
+import 'package:galana_apk/LavageM/dropdown.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:galana_apk/main.dart';
+import 'package:web_socket_channel/io.dart';
 
-class BlinkingCirclePl extends StatefulWidget {
+class BlinkingCircleLM extends StatefulWidget {
   @override
-  _BlinkingCircleStatePl createState() => _BlinkingCircleStatePl();
+  _BlinkingCircleLMState createState() => _BlinkingCircleLMState();
 }
 
-String dataPl = '';
-
-class _BlinkingCircleStatePl extends State<BlinkingCirclePl>
+class _BlinkingCircleLMState extends State<BlinkingCircleLM>
     with SingleTickerProviderStateMixin {
+
+  bool lavageMLibre = true;
+  String lavageMMessage = 'Appareil HS';
   late AnimationController _controller;
   late Animation<double> _animation;
   Timer? _timer;
 
+
   @override
   void initState() {
     super.initState();
+
+    channel.sink.add("galana.lavage_moteur.temps");
+
+    channel = IOWebSocketChannel.connect(wsServer);
+    channel.stream.listen(
+          (message) {
+        CheckLavageMMessage(message);
+      },
+    );
 
     _controller = AnimationController(
       vsync: this,
@@ -43,13 +52,13 @@ class _BlinkingCircleStatePl extends State<BlinkingCirclePl>
       });
   }
 
-  Future<void> confirmSendData() async {
+  Future<void> confirmEspOn() async {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Confirmation'),
-          content: Text('Activer l\'appareil maintenant?'),
+          content: Text('Ajouter ce temps au lavage?'),
           actions: <Widget>[
             TextButton(
               child: Text('Annuler'),
@@ -60,6 +69,34 @@ class _BlinkingCircleStatePl extends State<BlinkingCirclePl>
             TextButton(
               child: Text('OK'),
               onPressed: () {
+                _espOn(tempLavageM);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> confirmEspOff() async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text('Arrêter l\'appareil maintenant ?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Annuler'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                _espOff();
                 Navigator.of(context).pop();
               },
             ),
@@ -83,10 +120,9 @@ class _BlinkingCircleStatePl extends State<BlinkingCirclePl>
         AnimatedBuilder(
           animation: _animation,
           builder: (context, child) {
-            Color damnColor = Colors.red; // Default color
-
-            if (dataPl == 'PL libre' || dataPl == '') {
-              damnColor = Colors.blue; // Change color to blue if data is 'Pl libre'
+            Color damnColor = Colors.green; // Default color
+            if (!lavageMLibre) {
+              damnColor = Colors.red;
             }
             return Container(
               margin: EdgeInsets.only(top: 80),
@@ -100,13 +136,13 @@ class _BlinkingCircleStatePl extends State<BlinkingCirclePl>
                 ),
               ),
               child: Center(
-                child: isLoadingPl
+                child: !isConnected
                     ? SpinKitThreeBounce(
-                        color: Colors.blue,
+                        color: Colors.green,
                         size: 40.0,
                       )
                     : Text(
-                        '$dataPl',
+                        '$lavageMMessage',
                         style: TextStyle(
                           fontSize: 24.0,
                           fontWeight: FontWeight.bold,
@@ -117,57 +153,50 @@ class _BlinkingCircleStatePl extends State<BlinkingCirclePl>
             );
           },
         ),
-        if (!isLoadingPl && dataPl != 'PL libre')
+        if(isConnected)
           Positioned(
             bottom: 20.0,
             right: 0,
             child: GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text(
-                        'Attention !',
-                        style: TextStyle(
-                          color: Colors.black45,
-                        ),
-                      ),
-                      content: Text(
-                        'L\'appereil est en cours ! \nNous vous prions de bien vouloir patienter un moment...',
-                        style: TextStyle(
-                          color: Colors.black45,
-                        ),
-                      ),
-                      backgroundColor: Colors.white,
-                      actions: <Widget>[],
-                    );
-                  },
-                );
+              onLongPress: () {
+                confirmEspOff();
               },
               child: FloatingActionButton(
-                onPressed: null,
-                backgroundColor: Colors.redAccent,
-                child: Icon(Icons.send, color: Colors.white),
-              ),
-            ),
-          ),
-        if (!isLoadingPl && dataPl == 'PL libre')
-          Positioned(
-            bottom: 20.0,
-            right: 0,
-            child: GestureDetector(
-              onTap: () {
-                confirmSendData();
-              },
-              child: FloatingActionButton(
-                onPressed: null,
+                onPressed: () {
+                  confirmEspOn();
+                },
                 backgroundColor: Colors.white,
-                child: Icon(Icons.send, color: Colors.blue),
+                child: Icon(Icons.send, color: lavageMLibre ? Colors.green : Colors.red),
               ),
             ),
           ),
+
       ],
     );
+  }
+
+
+  void CheckLavageMMessage(message){
+    List<String> messSplit = message.split("/");
+
+    if (messSplit[0] == 'galana' && messSplit[1] == 'lavage_moteur' && messSplit[2] == '0') {
+      setState(() {
+        lavageMMessage = 'LM libre';
+      });
+      _controller.stop();
+      lavageMLibre = true;
+    }else if(messSplit[0]=='galana' && messSplit[1] =='lavage_moteur' && messSplit[2] != '0'){
+      setState(() {
+        lavageMMessage = messSplit[2] + ' min';
+      });
+      _controller.forward();
+      lavageMLibre = false;
+    }
+  }
+  void _espOn(time) {
+    channel.sink.add("galana/lavage_moteur/"+time.toString());
+  }
+  void _espOff() {
+    channel.sink.add("galana.lavage_moteur.off");
   }
 }

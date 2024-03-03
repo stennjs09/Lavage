@@ -1,19 +1,18 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import 'package:galana_apk/BottomNavbar.dart';
+import 'package:total_apk/BottomNavbar.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:connectivity/connectivity.dart';
-import 'package:galana_apk/Lavage/circle.dart';
 
 void main() {
   runApp(MyApp());
 }
 
 String wsServerPublic  = 'ws://102.16.44.51:8087';
-String wsServerLocal  = 'ws://192.168.88.18:8087';
-String wsServer = wsServerLocal;
+String wsServerLocal  = 'ws://192.168.49.157:8096';
+String wsServer = wsServerPublic;
 late WebSocketChannel channel;
 Color statusColor = Colors.red;
 bool isConnected = false;
@@ -56,7 +55,6 @@ class _MyHomePageState extends State<MyHomePage> {
       channel = IOWebSocketChannel.connect(wsServer);
       channel.stream.listen(
             (message) {
-              CheckLavageMessage(message);
           setState(() {
             isConnected = true;
             statusColor = Colors.lightGreenAccent;
