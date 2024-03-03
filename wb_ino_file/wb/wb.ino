@@ -3,11 +3,11 @@
 using namespace websockets;
 
 WebsocketsClient socket;
-const char* websocketServer = "ws://192.168.43.157:8096";
+const char* websocketServer = "ws://102.16.44.51:8087";
 boolean connected = false;
 
 const char* ssid = "F16";
-const char* password = "123456789";
+const char* password = "1234567890";
 
 const int ledPin = 2;
 const int relayPin = 32;
@@ -89,7 +89,7 @@ void updateCountdown() {
   countdownTime--;
   if (countdownTime >= 0) {
     if (countdownTime % 60 == 0) {
-      socket.send("galana/lavage/" + String(countdownTime / 60) + "/ok");
+      socket.send("galana/lavage/" + String(countdownTime / 60));
     }
   } else {
     // Fin du compte à rebours
@@ -109,9 +109,10 @@ void handleMessage(WebsocketsMessage message) {
   } else if (data == "galana.lavage.off") {
     countdownTime = 0;
     digitalWrite(relayPin, LOW);
+    socket.send("galana/lavage/0");
     socket.send("relay turned off");
   } else if (data == "galana.lavage.temps") {
-    socket.send("galana.lavage." + String(int(countdownTime / 60)) + "min");
+    socket.send("galana/lavage/" + String(int(countdownTime / 60)));
   } else if (data == "galana.lavage.?") {
     socket.send("galana.lavage.yes?");
   } else {
@@ -130,7 +131,7 @@ void handleMessage(WebsocketsMessage message) {
 
         if (espName == "lavage" && newCountdownTime > 0) {
           digitalWrite(relayPin, HIGH);
-          socket.send("galana/lavage/" + time + "/ok");
+          socket.send("galana/lavage/" + time);
 
           // Initialiser les variables de compte à rebours
           countdownTime = newCountdownTime;
