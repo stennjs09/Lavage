@@ -11,8 +11,8 @@ void main() {
 }
 
 String wsServerPublic  = 'ws://102.16.44.51:8087';
-String wsServerLocal  = 'ws://192.168.49.157:8096';
-String wsServer = wsServerPublic;
+String wsServerLocal  = 'ws://192.168.88.18:8087';
+String wsServer = wsServerLocal;
 late WebSocketChannel channel;
 Color statusColor = Colors.red;
 bool isConnected = false;

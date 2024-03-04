@@ -5,7 +5,6 @@ import 'package:total_apk/Services/delayed_animation.dart';
 import 'package:total_apk/Lavage/dropdown.dart';
 import 'package:total_apk/PneumatiqueVl/dropdown.dart';
 
-
 class PersistentTabScreen extends StatelessWidget {
 
   @override
@@ -95,139 +94,6 @@ class _LogoState extends State<Logo> {
   }
 }
 
-
-class dotsMenu extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-        icon: Icon(Icons.more_vert, color: Colors.white),
-      onSelected: (value) {
-        // Action à effectuer en fonction de la sélection du menu
-        if (value == 'about') {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text(
-                  'À propos',
-                  style: TextStyle(
-                    color: Colors.black45,
-                  ),
-                ),
-                content: Text(
-                  'Notre déploiement d\'application pour les stations-service marque une avancée significative dans la gestion à distance des appareils.\n\n En permettant aux utilisateurs de contrôler directement leurs équipements depuis leurs smartphones, nous éliminons les contraintes liées à la présence physique, garantissant ainsi un contrôle efficace et fluide à distance.',
-                  style: TextStyle(
-                    color: Colors.black45,
-                  ),
-                ),
-                backgroundColor:
-                Colors.white, // Couleur de fond blanche
-                actions: <Widget>[],
-              );
-            },
-          );
-        }
-        if (value == 'public') {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Confirmation'),
-                content: Text('Activer le mode public?'),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text('Non'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  TextButton(
-                    child: Text('Oui, activer'),
-                    onPressed: () {
-                      wsServer = wsServerPublic;
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
-        if (value == 'local') {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Confirmation'),
-                content: Text('Activer le mode local?'),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text('Non'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  TextButton(
-                    child: Text('Oui, activer'),
-                    onPressed: () {
-                      wsServer = wsServerLocal;
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      },
-      itemBuilder: (BuildContext context) {
-        return [
-          if(wsServer == wsServerLocal)
-            PopupMenuItem(
-              value: 'public',
-              child: ListTile(
-                leading: Icon(Icons.cell_wifi), // Utilisation de Icons.warehouse_sharp
-                title: Text(
-                  'Mode public',
-                  style: TextStyle(
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ),
-          if(wsServer == wsServerPublic)
-            PopupMenuItem(
-              value: 'local',
-              child: ListTile(
-                leading: Icon(Icons.wifi_lock), // Utilisation de Icons.warehouse_sharp
-                title: Text(
-                  'Mode local',
-                  style: TextStyle(
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ),
-
-          PopupMenuItem(
-            value: 'about',
-            child: ListTile(
-              leading: Icon(Icons.android),
-              title: Text(
-                'À propos',
-                style: TextStyle(
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ),
-        ];
-      },
-      color: Colors.white, // Couleur du popup menu
-    );
-  }
-}
-
 // Créez vos écrans individuels ici en remplaçant Screen1 et Screen2 par vos propres widgets
 class Screen1 extends StatelessWidget {
   @override
@@ -247,12 +113,6 @@ class Screen1 extends StatelessWidget {
           ],
         ),
         backgroundColor: Colors.red,
-        actions: <Widget>[
-          DelayedAnimation(
-            delay: 0,
-            child: dotsMenu()
-          ),
-        ],
       ),
       body: DelayedAnimation(
         delay: 1000,
@@ -282,12 +142,6 @@ class Screen2 extends StatelessWidget {
           ],
         ),
         backgroundColor: Colors.red,
-        actions: <Widget>[
-          DelayedAnimation(
-              delay: 0,
-              child: dotsMenu()
-          ),
-        ],
       ),
       body: Center(
         child: MyListViewVl(),

@@ -181,7 +181,7 @@ class _BlinkingCircleState extends State<BlinkingCircle>
 
     if (messSplit[0] == 'galana' && messSplit[1] == 'lavage' && messSplit[2] == '0') {
       setState(() {
-        lavageMessage = 'LG libre';
+        lavageMessage = 'Lavage libre';
       });
       _controller.stop();
       lavageLibre = true;

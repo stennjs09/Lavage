@@ -181,7 +181,7 @@ class _BlinkingCircleLMState extends State<BlinkingCircleLM>
 
     if (messSplit[0] == 'galana' && messSplit[1] == 'lavage_moteur' && messSplit[2] == '0') {
       setState(() {
-        lavageMMessage = 'LM libre';
+        lavageMMessage = 'L.Moteur libre';
       });
       _controller.stop();
       lavageMLibre = true;
