@@ -3,19 +3,20 @@ import 'dart:async';
 import 'package:galana_apk/Lavage/dropdown.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:galana_apk/main.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:galana_apk/Services/web_socket_manager.dart';
 
 class BlinkingCircle extends StatefulWidget {
   @override
   _BlinkingCircleState createState() => _BlinkingCircleState();
 }
 
+bool lavageLibre = true;
+String lavageMessage = 'Lavage libre';
+late AnimationController _controllerLavage;
+
 class _BlinkingCircleState extends State<BlinkingCircle>
     with SingleTickerProviderStateMixin {
 
-  bool lavageLibre = true;
-  String lavageMessage = 'Appareil HS';
-  late AnimationController _controller;
   late Animation<double> _animation;
   Timer? _timer;
 
@@ -24,30 +25,22 @@ class _BlinkingCircleState extends State<BlinkingCircle>
   void initState() {
     super.initState();
 
-    channel.sink.add("galana.lavage.temps");
-
-    channel = IOWebSocketChannel.connect(wsServer);
-    channel.stream.listen(
-          (message) {
-        CheckLavageMessage(message);
-      },
-    );
-
-    _controller = AnimationController(
+    _controllerLavage = AnimationController(
       vsync: this,
       duration: Duration(seconds: 1),
     );
 
     _animation = Tween<double>(begin: 10.0, end: 0.0).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _controllerLavage,
         curve: Curves.easeInOut,
       ),
-    )..addStatusListener((status) {
+    )
+      ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          _controller.reverse();
+          _controllerLavage.reverse();
         } else if (status == AnimationStatus.dismissed) {
-          _controller.forward();
+          _controllerLavage.forward();
         }
       });
   }
@@ -108,7 +101,7 @@ class _BlinkingCircleState extends State<BlinkingCircle>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controllerLavage.dispose();
     _timer?.cancel();
     super.dispose();
   }
@@ -138,17 +131,17 @@ class _BlinkingCircleState extends State<BlinkingCircle>
               child: Center(
                 child: !isConnected
                     ? SpinKitThreeBounce(
-                        color: Colors.green,
-                        size: 40.0,
-                      )
+                  color: Colors.green,
+                  size: 40.0,
+                )
                     : Text(
-                        '$lavageMessage',
-                        style: TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.bold,
-                          color: damnColor,
-                        ),
-                      ),
+                  '$lavageMessage',
+                  style: TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold,
+                    color: damnColor,
+                  ),
+                ),
               ),
             );
           },
@@ -166,7 +159,8 @@ class _BlinkingCircleState extends State<BlinkingCircle>
                   confirmEspOn();
                 },
                 backgroundColor: Colors.white,
-                child: Icon(Icons.send, color: lavageLibre ? Colors.green : Colors.red),
+                child: Icon(
+                    Icons.send, color: lavageLibre ? Colors.green : Colors.red),
               ),
             ),
           ),
@@ -175,28 +169,34 @@ class _BlinkingCircleState extends State<BlinkingCircle>
     );
   }
 
+  void _espOn(time) {
+    WebSocketManager.send("galana:lavage:"+time.toString());
+  }
+  void _espOff() {
+    WebSocketManager.send("galana:lavage:off");
+  }
+}
 
-  void CheckLavageMessage(message){
-    List<String> messSplit = message.split("/");
+  void CheckLavageMessage(mess) {
+    String message = '';
+    try {
+      message = String.fromCharCodes(mess);
+    } catch (e) {
+      message = mess;
+    }
+    List<String> messSplit = message.split(":");
 
-    if (messSplit[0] == 'galana' && messSplit[1] == 'lavage' && messSplit[2] == '0') {
-      setState(() {
-        lavageMessage = 'Lavage libre';
-      });
-      _controller.stop();
+    if (messSplit[0] == 'galana' &&
+        messSplit[1] == 'lavage' &&
+        messSplit[2] == '0') {
+      lavageMessage = 'Lavage libre';
+      _controllerLavage.stop();
       lavageLibre = true;
-    }else if(messSplit[0]=='galana' && messSplit[1] =='lavage' && messSplit[2] != '0'){
-      setState(() {
-        lavageMessage = messSplit[2] + ' min';
-      });
-      _controller.forward();
+    } else if (messSplit[0] == 'galana' &&
+        messSplit[1] == 'lavage' &&
+        messSplit[2] != '0') {
+      lavageMessage = messSplit[2] + ' min';
+      _controllerLavage.forward();
       lavageLibre = false;
     }
   }
-  void _espOn(time) {
-    channel.sink.add("galana/lavage/"+time.toString());
-  }
-  void _espOff() {
-    channel.sink.add("galana.lavage.off");
-  }
-}

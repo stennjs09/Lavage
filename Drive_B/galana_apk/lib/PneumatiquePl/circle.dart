@@ -3,19 +3,19 @@ import 'dart:async';
 import 'package:galana_apk/PneumatiquePl/dropdown.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:galana_apk/main.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:galana_apk/Services/web_socket_manager.dart';
 
 class BlinkingCirclePl extends StatefulWidget {
   @override
   _BlinkingCirclePlState createState() => _BlinkingCirclePlState();
 }
 
+bool plLibre = true;
+String plMessage = 'PL libre';
+late AnimationController _controllerPL;
+
 class _BlinkingCirclePlState extends State<BlinkingCirclePl>
     with SingleTickerProviderStateMixin {
-
-  bool plLibre = true;
-  String plMessage = 'Appareil HS';
-  late AnimationController _controller;
   late Animation<double> _animation;
   Timer? _timer;
 
@@ -23,32 +23,31 @@ class _BlinkingCirclePlState extends State<BlinkingCirclePl>
   void initState() {
     super.initState();
 
-    channel.sink.add("galana.pneumatique_pl.temps");
-
-    channel = IOWebSocketChannel.connect(wsServer);
-    channel.stream.listen(
-      (message) {
-        CheckPlMessage(message);
-      },
-    );
-
-    _controller = AnimationController(
+    _controllerPL = AnimationController(
       vsync: this,
       duration: Duration(seconds: 1),
     );
 
     _animation = Tween<double>(begin: 10.0, end: 0.0).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _controllerPL,
         curve: Curves.easeInOut,
       ),
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          _controller.reverse();
+          _controllerPL.reverse();
         } else if (status == AnimationStatus.dismissed) {
-          _controller.forward();
+          _controllerPL.forward();
         }
       });
+
+    if(plMessage == 'PL libre'){
+      _controllerPL.stop();
+      plLibre = true;
+    }else{
+      _controllerPL.forward();
+      plLibre = false;
+    }
   }
 
   Future<void> confirmEspOn() async {
@@ -107,7 +106,7 @@ class _BlinkingCirclePlState extends State<BlinkingCirclePl>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controllerPL.dispose();
     _timer?.cancel();
     super.dispose();
   }
@@ -174,33 +173,35 @@ class _BlinkingCirclePlState extends State<BlinkingCirclePl>
     );
   }
 
-  void CheckPlMessage(message) {
-    List<String> messSplit = message.split("/");
-
-    if (messSplit[0] == 'galana' &&
-        messSplit[1] == 'pneumatique_pl' &&
-        messSplit[2] == '0') {
-      plMessage = 'PL libre';
-      _controller.stop();
-      plLibre = true;
-    } else if (messSplit[0] == 'galana' &&
-        messSplit[1] == 'pneumatique_pl' &&
-        messSplit[2] != '0') {
-
-      setState(() {
-        plMessage = messSplit[2] + ' min';
-      });
-      _controller.forward();
-      plLibre = false;
-
-    }
-  }
-
   void _espOn(time) {
-    channel.sink.add("galana/pneumatique_pl/" + time.toString());
+    WebSocketManager.send("galana:pneumatique_pl:" + time.toString());
   }
 
   void _espOff() {
-    channel.sink.add("galana.pneumatique_pl.off");
+    WebSocketManager.send("galana:pneumatique_pl:off");
+  }
+}
+
+void CheckPlMessage(mess) {
+  String message = '';
+  try {
+    message = String.fromCharCodes(mess);
+  } catch (e) {
+    message = mess;
+  }
+  List<String> messSplit = message.split(":");
+
+  if (messSplit[0] == 'galana' &&
+      messSplit[1] == 'pneumatique_pl' &&
+      messSplit[2] == '0') {
+    plMessage = 'PL libre';
+    _controllerPL.stop();
+    plLibre = true;
+  } else if (messSplit[0] == 'galana' &&
+      messSplit[1] == 'pneumatique_pl' &&
+      messSplit[2] != '0') {
+    plMessage = messSplit[2] + ' min';
+    _controllerPL.forward();
+    plLibre = false;
   }
 }

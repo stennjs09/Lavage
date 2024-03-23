@@ -3,55 +3,53 @@ import 'dart:async';
 import 'package:galana_apk/LavageM/dropdown.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:galana_apk/main.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:galana_apk/Services/web_socket_manager.dart';
 
 class BlinkingCircleLM extends StatefulWidget {
   @override
   _BlinkingCircleLMState createState() => _BlinkingCircleLMState();
 }
 
+bool lavageMLibre = true;
+String lavageMMessage = 'L.Moteur libre';
+late AnimationController _controllerLM;
+
 class _BlinkingCircleLMState extends State<BlinkingCircleLM>
     with SingleTickerProviderStateMixin {
 
-  bool lavageMLibre = true;
-  String lavageMMessage = 'Appareil HS';
-  late AnimationController _controller;
   late Animation<double> _animation;
   Timer? _timer;
-
 
   @override
   void initState() {
     super.initState();
 
-    channel.sink.add("galana.lavage_moteur.temps");
-
-    channel = IOWebSocketChannel.connect(wsServer);
-    channel.stream.listen(
-          (message) {
-        CheckLavageMMessage(message);
-      },
-    );
-
-    _controller = AnimationController(
+    _controllerLM = AnimationController(
       vsync: this,
       duration: Duration(seconds: 1),
     );
 
     _animation = Tween<double>(begin: 10.0, end: 0.0).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _controllerLM,
         curve: Curves.easeInOut,
       ),
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          _controller.reverse();
+          _controllerLM.reverse();
         } else if (status == AnimationStatus.dismissed) {
-          _controller.forward();
+          _controllerLM.forward();
         }
       });
-  }
 
+    if(lavageMMessage == 'L.Moteur libre'){
+      _controllerLM.stop();
+      lavageMLibre = true;
+    }else{
+      _controllerLM.forward();
+      lavageMLibre = false;
+    }
+  }
   Future<void> confirmEspOn() async {
     return showDialog<void>(
       context: context,
@@ -108,7 +106,7 @@ class _BlinkingCircleLMState extends State<BlinkingCircleLM>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controllerLM.dispose();
     _timer?.cancel();
     super.dispose();
   }
@@ -175,28 +173,32 @@ class _BlinkingCircleLMState extends State<BlinkingCircleLM>
     );
   }
 
-
-  void CheckLavageMMessage(message){
-    List<String> messSplit = message.split("/");
-
-    if (messSplit[0] == 'galana' && messSplit[1] == 'lavage_moteur' && messSplit[2] == '0') {
-      setState(() {
-        lavageMMessage = 'L.Moteur libre';
-      });
-      _controller.stop();
-      lavageMLibre = true;
-    }else if(messSplit[0]=='galana' && messSplit[1] =='lavage_moteur' && messSplit[2] != '0'){
-      setState(() {
-        lavageMMessage = messSplit[2] + ' min';
-      });
-      _controller.forward();
-      lavageMLibre = false;
-    }
-  }
   void _espOn(time) {
-    channel.sink.add("galana/lavage_moteur/"+time.toString());
+    WebSocketManager.send("galana:lavage_moteur:"+time.toString());
   }
   void _espOff() {
-    channel.sink.add("galana.lavage_moteur.off");
+    WebSocketManager.send("galana:lavage_moteur:off");
+  }
+}
+
+
+void CheckLavageMMessage(mess){
+  String message = '';
+  try {
+    message = String.fromCharCodes(mess);
+  } catch (e) {
+    message = mess;
+  }
+  List<String> messSplit = message.split(":");
+
+
+  if (messSplit[0] == 'galana' && messSplit[1] == 'lavage_moteur' && messSplit[2] == '0') {
+      lavageMMessage = 'L.Moteur libre';
+      _controllerLM.stop();
+    lavageMLibre = true;
+  }else if(messSplit[0]=='galana' && messSplit[1] =='lavage_moteur' && messSplit[2] != '0'){
+      lavageMMessage = messSplit[2] + ' min';
+      _controllerLM.forward();
+    lavageMLibre = false;
   }
 }

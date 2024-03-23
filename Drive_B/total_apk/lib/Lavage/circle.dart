@@ -3,51 +3,41 @@ import 'dart:async';
 import 'package:total_apk/Lavage/dropdown.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:total_apk/main.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:total_apk/Services/web_socket_manager.dart';
 
 class BlinkingCircle extends StatefulWidget {
   @override
   _BlinkingCircleState createState() => _BlinkingCircleState();
 }
 
+bool lavageLibre = true;
+String lavageMessage = 'Lavage libre';
+late AnimationController _controllerLavage;
+
 class _BlinkingCircleState extends State<BlinkingCircle>
     with SingleTickerProviderStateMixin {
-
-  bool lavageLibre = true;
-  String lavageMessage = 'Appareil HS';
-  late AnimationController _controller;
   late Animation<double> _animation;
   Timer? _timer;
-
 
   @override
   void initState() {
     super.initState();
 
-    channel.sink.add("total.lavage.temps");
-
-    channel = IOWebSocketChannel.connect(wsServer);
-    channel.stream.listen(
-          (message) {
-        CheckLavageMessage(message);
-      },
-    );
-
-    _controller = AnimationController(
+    _controllerLavage = AnimationController(
       vsync: this,
       duration: Duration(seconds: 1),
     );
 
     _animation = Tween<double>(begin: 10.0, end: 0.0).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _controllerLavage,
         curve: Curves.easeInOut,
       ),
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          _controller.reverse();
+          _controllerLavage.reverse();
         } else if (status == AnimationStatus.dismissed) {
-          _controller.forward();
+          _controllerLavage.forward();
         }
       });
   }
@@ -108,7 +98,7 @@ class _BlinkingCircleState extends State<BlinkingCircle>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controllerLavage.dispose();
     _timer?.cancel();
     super.dispose();
   }
@@ -153,7 +143,7 @@ class _BlinkingCircleState extends State<BlinkingCircle>
             );
           },
         ),
-        if(isConnected)
+        if (isConnected)
           Positioned(
             bottom: 20.0,
             right: 0,
@@ -166,37 +156,45 @@ class _BlinkingCircleState extends State<BlinkingCircle>
                   confirmEspOn();
                 },
                 backgroundColor: Colors.white,
-                child: Icon(Icons.send, color: lavageLibre ? Colors.blue : Colors.red),
+                child: Icon(Icons.send,
+                    color: lavageLibre ? Colors.blue : Colors.red),
               ),
             ),
           ),
-
       ],
     );
   }
-
-
-  void CheckLavageMessage(message){
-    List<String> messSplit = message.split("/");
-
-    if (messSplit[0] == 'total' && messSplit[1] == 'lavage' && messSplit[2] == '0') {
-      setState(() {
-        lavageMessage = 'Lavage libre';
-      });
-      _controller.stop();
-      lavageLibre = true;
-    }else if(messSplit[0]=='total' && messSplit[1] =='lavage' && messSplit[2] != '0'){
-      setState(() {
-        lavageMessage = messSplit[2] + ' min';
-      });
-      _controller.forward();
-      lavageLibre = false;
-    }
-  }
   void _espOn(time) {
-    channel.sink.add("total/lavage/"+time.toString());
+    WebSocketManager.send("total:lavage:" + time.toString());
   }
+
   void _espOff() {
-    channel.sink.add("total.lavage.off");
+    WebSocketManager.send("total.lavage.off");
   }
 }
+
+
+void CheckLavageMessage(mess) {
+  String message = '';
+  try {
+    message = String.fromCharCodes(mess);
+  } catch (e) {
+    message = mess;
+  }
+  List<String> messSplit = message.split(":");
+
+  if (messSplit[0] == 'total' &&
+      messSplit[1] == 'lavage' &&
+      messSplit[2] == '0') {
+      lavageMessage = 'Lavage libre';
+    _controllerLavage.stop();
+    lavageLibre = true;
+  } else if (messSplit[0] == 'total' &&
+      messSplit[1] == 'lavage' &&
+      messSplit[2] != '0') {
+      lavageMessage = messSplit[2] + ' min';
+    _controllerLavage.forward();
+    lavageLibre = false;
+  }
+}
+

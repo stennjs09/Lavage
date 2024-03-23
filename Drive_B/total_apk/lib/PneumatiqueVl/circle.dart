@@ -3,19 +3,20 @@ import 'dart:async';
 import 'package:total_apk/PneumatiqueVl/dropdown.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:total_apk/main.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:total_apk/Services/web_socket_manager.dart';
 
 class BlinkingCircleVl extends StatefulWidget {
   @override
   _BlinkingCircleVlState createState() => _BlinkingCircleVlState();
 }
 
+bool vlLibre = true;
+String vlMessage = 'Pneumatique libre';
+late AnimationController _controllervl;
+
 class _BlinkingCircleVlState extends State<BlinkingCircleVl>
     with SingleTickerProviderStateMixin {
 
-  bool vlLibre = true;
-  String vlMessage = 'Appareil HS';
-  late AnimationController _controller;
   late Animation<double> _animation;
   Timer? _timer;
 
@@ -23,32 +24,32 @@ class _BlinkingCircleVlState extends State<BlinkingCircleVl>
   void initState() {
     super.initState();
 
-    channel.sink.add("total.pneumatique.temps");
-
-    channel = IOWebSocketChannel.connect(wsServer);
-    channel.stream.listen(
-          (message) {
-        CheckVlMessage(message);
-      },
-    );
-
-    _controller = AnimationController(
+    _controllervl = AnimationController(
       vsync: this,
       duration: Duration(seconds: 1),
     );
 
     _animation = Tween<double>(begin: 10.0, end: 0.0).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _controllervl,
         curve: Curves.easeInOut,
       ),
     )..addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        _controller.reverse();
+        _controllervl.reverse();
       } else if (status == AnimationStatus.dismissed) {
-        _controller.forward();
+        _controllervl.forward();
       }
     });
+
+    if(vlMessage == 'Peumatique libre'){
+      _controllervl.stop();
+      vlLibre = true;
+    }else{
+      _controllervl.forward();
+      vlLibre = false;
+    }
+
   }
 
   Future<void> confirmEspOn() async {
@@ -107,7 +108,7 @@ class _BlinkingCircleVlState extends State<BlinkingCircleVl>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controllervl.dispose();
     _timer?.cancel();
     super.dispose();
   }
@@ -174,33 +175,40 @@ class _BlinkingCircleVlState extends State<BlinkingCircleVl>
     );
   }
 
-  void CheckVlMessage(message) {
-    List<String> messSplit = message.split("/");
-
-    if (messSplit[0] == 'total' &&
-        messSplit[1] == 'pneumatique' &&
-        messSplit[2] == '0') {
-      vlMessage = 'Peumatique libre';
-      _controller.stop();
-      vlLibre = true;
-    } else if (messSplit[0] == 'total' &&
-        messSplit[1] == 'pneumatique' &&
-        messSplit[2] != '0') {
-
-      setState(() {
-        vlMessage = messSplit[2] + ' min';
-      });
-      _controller.forward();
-      vlLibre = false;
-
-    }
-  }
-
   void _espOn(time) {
-    channel.sink.add("total/pneumatique/" + time.toString());
+    WebSocketManager.send("total:pneumatique:" + time.toString());
   }
 
   void _espOff() {
-    channel.sink.add("total.pneumatique.off");
+    WebSocketManager.send("total.pneumatique.off");
   }
 }
+
+
+void CheckVlMessage(mess) {
+  String message = '';
+  try {
+    message = String.fromCharCodes(mess);
+  } catch (e) {
+    message = mess;
+  }
+  List<String> messSplit = message.split(":");
+
+  if (messSplit[0] == 'total' &&
+      messSplit[1] == 'pneumatique' &&
+      messSplit[2] == '0') {
+
+    vlMessage = 'Peumatique libre';
+    _controllervl.stop();
+    vlLibre = true;
+  } else if (messSplit[0] == 'total' &&
+      messSplit[1] == 'pneumatique' &&
+      messSplit[2] != '0') {
+
+      vlMessage = messSplit[2] + ' min';
+    _controllervl.forward();
+    vlLibre = false;
+
+  }
+}
+

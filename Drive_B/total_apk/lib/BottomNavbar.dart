@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:total_apk/main.dart';
 import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:total_apk/Services/delayed_animation.dart';
 import 'package:total_apk/Lavage/dropdown.dart';
 import 'package:total_apk/PneumatiqueVl/dropdown.dart';
 
 class PersistentTabScreen extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     List<Widget> _buildScreens() {
@@ -36,25 +34,26 @@ class PersistentTabScreen extends StatelessWidget {
     }
 
     return PersistentTabView(
-        context,
-        controller: PersistentTabController(),
-        screens: _buildScreens(),
-        items: _navBarsItems(),
-        confineInSafeArea: true,
-        backgroundColor: Colors.white,
-        handleAndroidBackButtonPress: true,
-        resizeToAvoidBottomInset: true,
-        stateManagement: true,
-        hideNavigationBarWhenKeyboardShows: true,
-        decoration: NavBarDecoration(
+      context,
+      controller: PersistentTabController(),
+      screens: _buildScreens(),
+      items: _navBarsItems(),
+      confineInSafeArea: true,
+      backgroundColor: Colors.white,
+      handleAndroidBackButtonPress: true,
+      resizeToAvoidBottomInset: true,
+      stateManagement: true,
+      hideNavigationBarWhenKeyboardShows: true,
+      decoration: NavBarDecoration(
         borderRadius: BorderRadius.circular(10.0),
-        ),
-        popAllScreensOnTapOfSelectedTab: true,
-        navBarStyle: NavBarStyle.style9,
-  );
+      ),
+      popAllScreensOnTapOfSelectedTab: true,
+      navBarStyle: NavBarStyle.style9,
+      onItemSelected: (int index) {
+      },
+    );
+  }
 }
-}
-
 
 class Logo extends StatefulWidget {
   @override
@@ -75,18 +74,6 @@ class _LogoState extends State<Logo> {
               width: 50,
               height: 50,
             ),
-            Positioned(
-              right: 2,
-              bottom: 4,
-              child: Container(
-                width: 14,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: statusColor, // statusColor is not defined here
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -104,7 +91,7 @@ class Screen1 extends StatelessWidget {
           children: <Widget>[
             Logo(),
             DelayedAnimation(
-              delay: 1000,
+              delay: 500,
               child: Text(
                 '  LAVAGE',
                 style: TextStyle(color: Colors.white),
@@ -115,7 +102,7 @@ class Screen1 extends StatelessWidget {
         backgroundColor: Colors.red,
       ),
       body: DelayedAnimation(
-        delay: 1000,
+        delay: 500,
         child: Container(
           child: MyListView(),
         ),

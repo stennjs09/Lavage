@@ -1,4 +1,5 @@
 <?php
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
 require __DIR__ . '/vendor/autoload.php';
 include 'connexion.php';
 
@@ -27,7 +28,7 @@ class WebSocketApplication implements MessageComponentInterface {
     
         if ($resultat->num_rows > 0) {
             while ($row = $resultat->fetch_assoc()) {
-                $conn->send($row["table_name"]."/".$row["nom_esp"]."/".$row["temps"]);
+                $conn->send($row["table_name"].":".$row["nom_esp"].":".$row["temps"]);
             }
         }
     }
@@ -36,8 +37,8 @@ class WebSocketApplication implements MessageComponentInterface {
     public function onMessage(ConnectionInterface $from, $msg) {
         global $connexion;
 
-        if (strpos($msg, '/') !== false) {
-            $parts = explode('/', $msg, 4);
+        if (strpos($msg, ':') !== false) {
+            $parts = explode(':', $msg, 4);
 
         $sql = "UPDATE $parts[0] SET temps = ? WHERE nom_esp = ?";
         $stmt = $connexion->prepare($sql);

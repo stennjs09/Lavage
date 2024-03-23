@@ -1,21 +1,21 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:galana_apk/BottomNavbar.dart';
-import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:galana_apk/Services/web_socket_manager.dart';
+import 'package:galana_apk/Lavage/circle.dart';
+import 'package:galana_apk/LavageM/circle.dart';
+import 'package:galana_apk/PneumatiquePl/circle.dart';
+import 'package:galana_apk/PneumatiqueVl/circle.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-String wsServerPublic  = 'ws://102.16.44.51:8087';
-String wsServerLocal  = 'ws://192.168.88.18:8087';
-String wsServer = wsServerLocal;
-late WebSocketChannel channel;
-Color statusColor = Colors.red;
+String wsServerPublic = 'ws://102.16.44.51:8087';
+String wsServerLocal = 'ws://192.168.88.18:8087';
+String wsServer = '';
 bool isConnected = false;
+bool start = false;
 
 
 class MyApp extends StatelessWidget {
@@ -34,66 +34,95 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   void initState() {
     super.initState();
-    connectToWebSocket();
-    Connectivity().onConnectivityChanged.listen((result) {
-      if (result == ConnectivityResult.none) {
-        setState(() {
-          isConnected = false;
-          statusColor = Colors.red;
-        });
-      }else {
-        connectToWebSocket();
-      }
+    connexionDialog();
+  }
+
+  void _listenToWebSocket() {
+    WebSocketManager.listen((message) {
+      CheckLavageMessage(message);
+      CheckLavageMMessage(message);
+      CheckPlMessage(message);
+      CheckVlMessage(message);
+      setState(() {
+        isConnected = true;
+      });
+    }, () {
+      setState(() {
+        isConnected = false;
+      });
+
+      Future.delayed(Duration(seconds: 5), () {
+        WebSocketManager.connect(wsServer);
+        _listenToWebSocket();
+      });
     });
   }
-  void connectToWebSocket() {
-    if(!isConnected) {
-      channel = IOWebSocketChannel.connect(wsServer);
-      channel.stream.listen(
-            (message) {
-          setState(() {
-            isConnected = true;
-            statusColor = Colors.lightGreenAccent;
-          });
-        },
-        onError: (error) {
-          setState(() {
-            isConnected = false;
-            statusColor = Colors.red;
-          });
-          // Attempt reconnection after a delay
-          Future.delayed(Duration(seconds: 5), () {
-            connectToWebSocket();
-          });
-        },
-        onDone: () {
-          setState(() {
-            isConnected = false;
-            statusColor = Colors.red;
-          });
-          // Attempt reconnection after a delay
-          Future.delayed(Duration(seconds: 5), () {
-            connectToWebSocket();
-          });
-        },
-      );
-    }
+
+  void connexionDialog() async {
+    await Future.delayed(Duration.zero);
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('BIENVENUE'),
+          content: Text('Choisir le mode de connexion :'),
+          actions: <Widget>[
+            Container(
+              width: double.infinity,
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextButton(
+                      child: Text('Public'),
+                      onPressed: () {
+                        setState(() {
+                          ;
+                          start = true;
+                        });
+                        wsServer = wsServerPublic;
+                        WebSocketManager.connect(wsServer);
+                        _listenToWebSocket();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: TextButton(
+                      child: Text('Local'),
+                      onPressed: () {
+                        setState(() {
+                          start = true;
+                        });
+                        wsServer = wsServerLocal;
+                        WebSocketManager.connect(wsServer);
+                        _listenToWebSocket();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PersistentTabScreen(),
+      body: start ? PersistentTabScreen() : null,
     );
   }
 
   @override
   void dispose() {
-    channel.sink.close();
+    WebSocketManager.close();
     super.dispose();
   }
 }

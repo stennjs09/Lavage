@@ -250,7 +250,7 @@ class _MyListViewState extends State<MyListView> {
           ),
           Center(
             child: DelayedAnimation(
-              delay: 5000,
+              delay: 500,
               child: BlinkingCircle(),
             ),
           ),

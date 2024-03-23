@@ -4,9 +4,9 @@ using namespace websockets;
 
 WebsocketsClient socket;
 const char* websocketServer = "ws://192.168.88.18:8087";
-boolean connected = false;
+boolean connected = true;
 
-const char* ssid = "GALANA-PHAROS";
+const char* ssid = "GALANA-PHAROS-EXT";
 const char* password = "galana2022";
 
 const int ledPin = 2;
@@ -29,7 +29,6 @@ State currentState = IDLE;
 
 void setup() {
   Serial.begin(115200);
-  WiFi.setSleep(false);
   connectWiFi();
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
@@ -42,15 +41,9 @@ void setup() {
 
 void loop() {
 
-  unsigned long currentMillisWiFi = millis();
-  if (currentMillisWiFi - previousMillisWiFi >= intervalWiFi) {
-    previousMillisWiFi = currentMillisWiFi;
-    socket.close();
-  }
-
-  if (WiFi.status() != WL_CONNECTED) {
-    connectWiFi();
-  }
+if(connected == false){
+    ESP.restart();
+}
 
   try {
     socket.poll();
@@ -83,15 +76,23 @@ void loop() {
     Serial.println("Exception caught. Rebooting...");
     ESP.restart();  // Redémarrer l'appareil en cas d'exception
   }
+
+  unsigned long currentMillisWiFi = millis();
+  if (currentMillisWiFi - previousMillisWiFi >= intervalWiFi) {
+    previousMillisWiFi = currentMillisWiFi;
+    socket.close();
+  }
 }
 
 void updateCountdown() {
   countdownTime--;
-  if (countdownTime >= 0) {
+  if (countdownTime > 0) {
     if (countdownTime % 60 == 0) {
-      socket.send("galana/pneumatique_vl/" + String(countdownTime / 60));
+      socket.send("galana:pneumatique_vl:" + String(countdownTime / 60));
     }
   } else {
+    socket.send("galana:pneumatique_vl:0");
+    countdownTime = 0;
     // Fin du compte à rebours
     digitalWrite(relayPin, LOW);
     socket.send("relay turned off");
@@ -109,39 +110,33 @@ void handleMessage(WebsocketsMessage message) {
   } else if (data == "galana.pneumatique_vl.off") {
     countdownTime = 0;
     digitalWrite(relayPin, LOW);
-    socket.send("galana/pneumatique_vl/0");
+    socket.send("galana:pneumatique_vl:0");
     socket.send("relay turned off");
   } else if (data == "galana.pneumatique_vl.temps") {
-    socket.send("galana/pneumatique_vl/" + String(int(countdownTime / 60)));
+    socket.send("galana:pneumatique_vl:" + String(int(countdownTime / 60)));
   } else if (data == "galana.pneumatique_vl.?") {
     socket.send("galana.pneumatique_vl.yes?");
   } else {
-    int splitIndex1 = data.indexOf('/');
+    int firstSlashIndex = data.indexOf(':');
+    int secondSlashIndex = data.indexOf(':', firstSlashIndex + 1);  // Recherche du deuxième slash à partir de l'index trouvé précédemment
 
-    if (splitIndex1 != -1) {
-      String part1 = data.substring(0, splitIndex1);
-      String part2 = data.substring(splitIndex1 + 1);
+    if (firstSlashIndex != -1 && secondSlashIndex != -1) {  // Vérifier si les deux slashes ont été trouvés
+      String part1 = data.substring(0, firstSlashIndex);
+      String part2 = data.substring(firstSlashIndex + 1, secondSlashIndex);
+      String part3 = data.substring(secondSlashIndex + 1);
+      int newCountdownTime = 60 * (part3.toInt());
 
-      int splitIndex2 = part2.indexOf('/');
-      if (splitIndex2 != -1) {
-        String espName = part2.substring(0,splitIndex2);
-        String time = part2.substring(splitIndex2 + 1);
+      if (part1 == "galana" && part2 == "pneumatique_vl" && newCountdownTime > 0) {
+        digitalWrite(relayPin, HIGH);
+        socket.send("galana:pneumatique_vl:" + part3);
 
-        int newCountdownTime = 60 * (time.toInt());
+        // Initialiser les variables de compte à rebours
+        countdownTime = newCountdownTime;
+        currentState = COUNTDOWN;
+        previousMillis = millis();
 
-        if (espName == "pneumatique_vl" && newCountdownTime > 0) {
-          digitalWrite(relayPin, HIGH);
-          socket.send("galana/pneumatique_vl/" + time);
-
-          // Initialiser les variables de compte à rebours
-          countdownTime = newCountdownTime;
-          currentState = COUNTDOWN;
-          previousMillis = millis();
-
-        } else {
-          Serial.println(data +" X");
-        }
-
+      } else {
+        Serial.println(data + " X");
       }
     }
   }
@@ -155,8 +150,6 @@ void handleEvent(WebsocketsEvent event, WSInterfaceString data) {
       break;
     case WebsocketsEvent::ConnectionClosed:
       Serial.println("WebSocket connection closed");
-      connected = false;
-      // Réessayer la connexion en cas de fermeture inattendue
       connectToWebSocket();
       break;
     case WebsocketsEvent::GotPing:
@@ -171,13 +164,13 @@ void handleEvent(WebsocketsEvent event, WSInterfaceString data) {
 }
 
 void connectToWebSocket() {
-  connected = socket.connect(websocketServer);
-  if (connected) {
+  bool connexion = socket.connect(websocketServer);
+  if (connexion) {
     Serial.println("Connected");
+    connected = true;
   } else {
     Serial.println("Connection failed.");
-    // Gérer l'échec de connexion de manière appropriée
-    handleConnectionFailure();
+    connected = false;
   }
 }
 
@@ -194,8 +187,7 @@ void connectWiFi() {
 
   while (WiFi.status() != WL_CONNECTED) {
     if (millis() - startAttemptTime > 10000) {
-      // Gérer l'échec de connexion WiFi après un certain temps
-      handleWiFiConnectionFailure();
+      connected == false;
     }
     delay(500);
     Serial.print(".");
@@ -204,14 +196,4 @@ void connectWiFi() {
   Serial.print("connected to : ");
   Serial.println(ssid);
   connectToWebSocket();
-}
-
-void handleConnectionFailure() {
-  Serial.println("WebSocket connection failed. Reconnecting...");
-  connectToWebSocket();  // Réessayer la connexion WebSocket
-}
-
-void handleWiFiConnectionFailure() {
-  Serial.println("WiFi connection failed. Reconnecting...");
-  connectWiFi();  // Réessayer la connexion WiFi
 }

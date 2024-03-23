@@ -3,19 +3,19 @@ import 'dart:async';
 import 'package:galana_apk/PneumatiqueVl/dropdown.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:galana_apk/main.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:galana_apk/Services/web_socket_manager.dart';
 
 class BlinkingCircleVl extends StatefulWidget {
   @override
   _BlinkingCircleVlState createState() => _BlinkingCircleVlState();
 }
 
+bool vlLibre = true;
+String vlMessage = 'VL libre';
+late AnimationController _controllerVL;
+
 class _BlinkingCircleVlState extends State<BlinkingCircleVl>
     with SingleTickerProviderStateMixin {
-
-  bool vlLibre = true;
-  String vlMessage = 'Appareil HS';
-  late AnimationController _controller;
   late Animation<double> _animation;
   Timer? _timer;
 
@@ -23,34 +23,32 @@ class _BlinkingCircleVlState extends State<BlinkingCircleVl>
   void initState() {
     super.initState();
 
-    channel.sink.add("galana.pneumatique_vl.temps");
-
-    channel = IOWebSocketChannel.connect(wsServer);
-    channel.stream.listen(
-          (message) {
-        CheckVlMessage(message);
-      },
-    );
-
-    _controller = AnimationController(
+    _controllerVL = AnimationController(
       vsync: this,
       duration: Duration(seconds: 1),
     );
 
     _animation = Tween<double>(begin: 10.0, end: 0.0).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _controllerVL,
         curve: Curves.easeInOut,
       ),
     )..addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _controller.reverse();
-      } else if (status == AnimationStatus.dismissed) {
-        _controller.forward();
-      }
-    });
-  }
+        if (status == AnimationStatus.completed) {
+          _controllerVL.reverse();
+        } else if (status == AnimationStatus.dismissed) {
+          _controllerVL.forward();
+        }
+      });
 
+    if(vlMessage == 'VL libre'){
+      _controllerVL.stop();
+      vlLibre = true;
+    }else{
+      _controllerVL.forward();
+      vlLibre = false;
+    }
+  }
   Future<void> confirmEspOn() async {
     return showDialog<void>(
       context: context,
@@ -107,7 +105,7 @@ class _BlinkingCircleVlState extends State<BlinkingCircleVl>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controllerVL.dispose();
     _timer?.cancel();
     super.dispose();
   }
@@ -137,17 +135,17 @@ class _BlinkingCircleVlState extends State<BlinkingCircleVl>
               child: Center(
                 child: !isConnected
                     ? SpinKitThreeBounce(
-                  color: Colors.blue,
-                  size: 40.0,
-                )
+                        color: Colors.blue,
+                        size: 40.0,
+                      )
                     : Text(
-                  '$vlMessage',
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.bold,
-                    color: damnColor,
-                  ),
-                ),
+                        '$vlMessage',
+                        style: TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.bold,
+                          color: damnColor,
+                        ),
+                      ),
               ),
             );
           },
@@ -166,7 +164,7 @@ class _BlinkingCircleVlState extends State<BlinkingCircleVl>
                 },
                 backgroundColor: Colors.white,
                 child:
-                Icon(Icons.send, color: vlLibre ? Colors.blue : Colors.red),
+                    Icon(Icons.send, color: vlLibre ? Colors.blue : Colors.red),
               ),
             ),
           ),
@@ -174,33 +172,35 @@ class _BlinkingCircleVlState extends State<BlinkingCircleVl>
     );
   }
 
-  void CheckVlMessage(message) {
-    List<String> messSplit = message.split("/");
-
-    if (messSplit[0] == 'galana' &&
-        messSplit[1] == 'pneumatique_vl' &&
-        messSplit[2] == '0') {
-      vlMessage = 'VL libre';
-      _controller.stop();
-      vlLibre = true;
-    } else if (messSplit[0] == 'galana' &&
-        messSplit[1] == 'pneumatique_vl' &&
-        messSplit[2] != '0') {
-
-      setState(() {
-        vlMessage = messSplit[2] + ' min';
-      });
-      _controller.forward();
-      vlLibre = false;
-
-    }
-  }
-
   void _espOn(time) {
-    channel.sink.add("galana/pneumatique_vl/" + time.toString());
+    WebSocketManager.send("galana:pneumatique_vl:" + time.toString());
   }
 
   void _espOff() {
-    channel.sink.add("galana.pneumatique_vl.off");
+    WebSocketManager.send("galana:pneumatique_vl:off");
+  }
+}
+
+void CheckVlMessage(mess) {
+  String message = '';
+  try {
+    message = String.fromCharCodes(mess);
+  } catch (e) {
+    message = mess;
+  }
+  List<String> messSplit = message.split(":");
+
+  if (messSplit[0] == 'galana' &&
+      messSplit[1] == 'pneumatique_vl' &&
+      messSplit[2] == '0') {
+    vlMessage = 'VL libre';
+    _controllerVL.stop();
+    vlLibre = true;
+  } else if (messSplit[0] == 'galana' &&
+      messSplit[1] == 'pneumatique_vl' &&
+      messSplit[2] != '0') {
+    vlMessage = messSplit[2] + ' min';
+    _controllerVL.forward();
+    vlLibre = false;
   }
 }
